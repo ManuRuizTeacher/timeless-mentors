@@ -24,7 +24,6 @@ import {
   UserProfile,
 } from "../lib/types";
 
-const SIMLI_API_KEY = process.env.NEXT_PUBLIC_SIMLI_API_KEY;
 
 type Tab = "agents" | "schools" | "users" | "monitoring";
 
@@ -133,9 +132,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       // Simli agents
-      const simliRes = await fetch("https://api.simli.ai/agents", {
-        headers: { "x-simli-api-key": SIMLI_API_KEY || "" },
-      });
+      const simliRes = await fetch("/api/simli/agents");
       if (!simliRes.ok) throw new Error(`Simli API error: ${simliRes.status}`);
       const simliData = await simliRes.json();
       // Log first agent to inspect available image fields

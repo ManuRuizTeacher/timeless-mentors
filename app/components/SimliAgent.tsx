@@ -16,7 +16,6 @@ interface SimliAgentProps {
   onClose: () => void;
 }
 
-const SIMLI_API_KEY = process.env.NEXT_PUBLIC_SIMLI_API_KEY;
 
 const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
   const { t } = useLanguage();
@@ -112,15 +111,9 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
     setError(null);
 
     try {
-      // Step 1: Get a session token
-      const tokenResponse = await fetch("https://api.simli.ai/auto/token", {
+      // Step 1: Get a session token via server-side proxy
+      const tokenResponse = await fetch("/api/simli/token", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          simliAPIKey: SIMLI_API_KEY,
-        }),
       });
 
       if (!tokenResponse.ok) {
