@@ -34,18 +34,6 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           {profile && (
             <>
-              <Link
-                href="/profile"
-                className="text-sm text-text-secondary hover:text-white transition-colors hidden sm:block"
-              >
-                {profile.name}
-              </Link>
-              <Link
-                href="/school"
-                className="text-sm text-text-secondary hover:text-white transition-colors"
-              >
-                {t("nav.mySchool")}
-              </Link>
               {profile.email === "admin@admin.com" && (
                 <Link
                   href="/admin"
@@ -55,10 +43,16 @@ export default function Navbar() {
                 </Link>
               )}
               <Link
-                href="/contact"
+                href="/school"
                 className="text-sm text-text-secondary hover:text-white transition-colors"
               >
-                {t("nav.contact")}
+                {t("nav.mySchool")}
+              </Link>
+              <Link
+                href="/profile"
+                className="text-sm text-text-secondary hover:text-white transition-colors hidden sm:block"
+              >
+                {profile.name}
               </Link>
               <a
                 href="https://www.timelessmentors.eu/"
@@ -68,6 +62,12 @@ export default function Navbar() {
               >
                 {t("nav.webPrincipal")}
               </a>
+              <Link
+                href="/contact"
+                className="text-sm text-text-secondary hover:text-white transition-colors"
+              >
+                {t("nav.contact")}
+              </Link>
               <div className="flex items-center gap-1">
                 {LOCALES.map((l) => (
                   <button
