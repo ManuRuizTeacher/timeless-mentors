@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -10,7 +10,7 @@ import cn from "../utils/cn";
 
 const CONTACT_EMAIL = "vicenteruiz@timelessmentors.eu";
 
-export default function ContactPage() {
+function ContactForm() {
   const { user, profile, loading } = useAuth();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -181,5 +181,19 @@ export default function ContactPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-primary flex items-center justify-center">
+          <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <ContactForm />
+    </Suspense>
   );
 }

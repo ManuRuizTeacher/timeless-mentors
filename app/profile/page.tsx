@@ -156,7 +156,7 @@ export default function ProfilePage() {
     // Collect unique mentors
     const mentorSet = new Set<string>();
     for (const r of completedRecords) mentorSet.add(r.agentName || r.agentId);
-    const mentors = [...mentorSet];
+    const mentors = Array.from(mentorSet);
 
     // Group by day
     const dayMap: Record<string, Record<string, number>> = {};
