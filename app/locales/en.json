@@ -73,8 +73,8 @@
   "contact.fieldDescription": "Description",
   "contact.fieldDescriptionPlaceholder": "Describe your inquiry...",
   "contact.submit": "Send message",
-  "contact.sentTitle": "Message ready",
-  "contact.sentMessage": "Your email client has been opened with the message. If it didn't open, send an email to vicenteruiz@timelessmentors.eu.",
+  "contact.sentTitle": "Message sent",
+  "contact.sentMessage": "Your message has been sent successfully. We will get back to you as soon as possible.",
   "contact.sendAnother": "Send another message",
   "contact.upgradePlanTitle": "I want to upgrade my plan",
   "contact.upgradePlanDescription": "Hello Timeless Mentors team,\n\nI would like to upgrade my plan. I'd like to expand my access and connect with more mentors on the platform to make the most of the experience.\n\nThank you"

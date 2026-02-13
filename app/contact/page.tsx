@@ -2,13 +2,13 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import Navbar from "../components/Navbar";
 import LoginForm from "../components/LoginForm";
 import cn from "../utils/cn";
-
-const CONTACT_EMAIL = "vicenteruiz@timelessmentors.eu";
 
 function ContactForm() {
   const { user, profile, loading } = useAuth();
@@ -20,6 +20,7 @@ function ContactForm() {
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Pre-fill from profile and query params
   const [prefilled, setPrefilled] = useState(false);
@@ -35,18 +36,24 @@ function ContactForm() {
     }
   }, [profile, prefilled, searchParams]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const subject = encodeURIComponent(title);
-    const body = encodeURIComponent(
-      `${t("contact.fieldName")}: ${name}\n${t("contact.fieldEmail")}: ${email}\n\n${description}`
-    );
-    window.open(
-      `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`,
-      "_self"
-    );
-    setSent(true);
+    setSubmitting(true);
+    try {
+      await addDoc(collection(db, "messages"), {
+        title,
+        name,
+        email,
+        description,
+        userId: user!.uid,
+        createdAt: serverTimestamp(),
+        status: "open",
+      });
+      setSent(true);
+    } catch (err: any) {
+      alert(err.message);
+    }
+    setSubmitting(false);
   };
 
   if (loading) {
@@ -167,14 +174,14 @@ function ContactForm() {
 
               <button
                 type="submit"
-                disabled={!title.trim() || !description.trim()}
+                disabled={!title.trim() || !description.trim() || submitting}
                 className={cn(
                   "w-full py-3 rounded-full font-medium transition-all duration-300",
                   "bg-accent text-white hover:bg-accent-hover",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
               >
-                {t("contact.submit")}
+                {submitting ? "..." : t("contact.submit")}
               </button>
             </form>
           )}

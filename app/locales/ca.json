@@ -73,8 +73,8 @@
   "contact.fieldDescription": "Descripcio",
   "contact.fieldDescriptionPlaceholder": "Descriu la teva consulta...",
   "contact.submit": "Enviar missatge",
-  "contact.sentTitle": "Missatge preparat",
-  "contact.sentMessage": "S'ha obert el teu client de correu amb el missatge. Si no s'ha obert, envia un email a vicenteruiz@timelessmentors.eu.",
+  "contact.sentTitle": "Missatge enviat",
+  "contact.sentMessage": "El teu missatge s'ha enviat correctament. Ens posarem en contacte amb tu el mes aviat possible.",
   "contact.sendAnother": "Enviar un altre missatge",
   "contact.upgradePlanTitle": "Vull millorar el meu pla",
   "contact.upgradePlanDescription": "Hola equip de Timeless Mentors,\n\nVull millorar el meu pla. M'agradaria ampliar l'accés i poder connectar amb més mentors dins de la plataforma per seguir aprofitant al màxim l'experiència.\n\nGràcies"

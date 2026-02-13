@@ -10,6 +10,8 @@ import {
   updateDoc,
   arrayRemove,
   addDoc,
+  query,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -25,7 +27,18 @@ import {
 } from "../lib/types";
 
 
-type Tab = "agents" | "schools" | "users" | "monitoring";
+type Tab = "agents" | "schools" | "users" | "monitoring" | "messages";
+
+interface MessageTicket {
+  id: string;
+  title: string;
+  name: string;
+  email: string;
+  description: string;
+  userId: string;
+  createdAt: Date;
+  status: "open" | "closed";
+}
 
 // ── Monitoring types ────────────────────────────────────────
 
@@ -125,6 +138,10 @@ export default function AdminPage() {
   const [monitoringView, setMonitoringView] = useState<"users" | "schools">("users");
   const [expandedMonitoringKey, setExpandedMonitoringKey] = useState<string | null>(null);
 
+  // Messages tab
+  const [messages, setMessages] = useState<MessageTicket[]>([]);
+  const [messagesFilter, setMessagesFilter] = useState<"all" | "open" | "closed">("open");
+
   const publishedIds = new Set(publishedAgents.map((a) => a.id));
 
   // ── Fetch all data ─────────────────────────────────────────
@@ -187,6 +204,25 @@ export default function AdminPage() {
         } as MonitoringRecord;
       });
       setMonitoringRecords(mData);
+
+      // Messages
+      const msgSnap = await getDocs(
+        query(collection(db, "messages"), orderBy("createdAt", "desc"))
+      );
+      const msgData = msgSnap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          title: data.title || "",
+          name: data.name || "",
+          email: data.email || "",
+          description: data.description || "",
+          userId: data.userId || "",
+          createdAt: data.createdAt?.toDate() || new Date(),
+          status: data.status || "open",
+        } as MessageTicket;
+      });
+      setMessages(msgData);
     } catch (err: any) {
       setStatus(`Error cargando datos: ${err.message}`);
     }
@@ -495,6 +531,24 @@ export default function AdminPage() {
     setActionLoading(null);
   };
 
+  // ════════════════════════════════════════════════════════════
+  // MESSAGES TAB HANDLERS
+  // ════════════════════════════════════════════════════════════
+
+  const handleUpdateMessageStatus = async (msgId: string, newStatus: "open" | "closed") => {
+    setActionLoading(msgId);
+    try {
+      await updateDoc(doc(db, "messages", msgId), { status: newStatus });
+      setMessages((prev) =>
+        prev.map((m) => (m.id === msgId ? { ...m, status: newStatus } : m))
+      );
+      setStatus(newStatus === "closed" ? "Mensaje cerrado." : "Mensaje reabierto.");
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`);
+    }
+    setActionLoading(null);
+  };
+
   // ── Computed lists ─────────────────────────────────────────
 
   const published = simliAgents.filter((a) => publishedIds.has(a.id));
@@ -524,7 +578,8 @@ export default function AdminPage() {
               <p className="text-text-secondary text-sm mt-1">
                 {simliAgents.length} agentes Simli &middot; {publishedAgents.length}{" "}
                 publicados &middot; {schools.length} escuelas &middot;{" "}
-                {users.length} usuarios
+                {users.length} usuarios &middot;{" "}
+                {messages.filter((m) => m.status === "open").length} mensajes abiertos
               </p>
             </div>
             <div className="flex gap-3">
@@ -563,6 +618,13 @@ export default function AdminPage() {
             </button>
             <button className={tabClasses("monitoring")} onClick={() => setActiveTab("monitoring")}>
               Monitoring
+            </button>
+            <button className={tabClasses("messages")} onClick={() => setActiveTab("messages")}>
+              Mensajes{messages.filter((m) => m.status === "open").length > 0 && (
+                <span className="ml-1.5 px-1.5 py-0.5 text-[10px] rounded-full bg-red-500/20 text-red-400">
+                  {messages.filter((m) => m.status === "open").length}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -1225,6 +1287,127 @@ export default function AdminPage() {
                 )}
               </section>
             )}
+
+            {/* ═══════════ MESSAGES TAB ═══════════ */}
+            {activeTab === "messages" && (() => {
+              const filtered = messages.filter((m) =>
+                messagesFilter === "all" ? true : m.status === messagesFilter
+              );
+
+              return (
+                <section>
+                  <div className="flex items-center gap-3 mb-6">
+                    <h2 className="font-sora font-semibold text-lg text-accent mr-2">
+                      Mensajes ({filtered.length})
+                    </h2>
+                    {(["open", "closed", "all"] as const).map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setMessagesFilter(f)}
+                        className={cn(
+                          "px-4 py-1.5 rounded-full text-xs font-medium border transition-all duration-200",
+                          messagesFilter === f
+                            ? "bg-accent/20 text-accent border-accent/40"
+                            : "bg-white/5 text-text-secondary border-border-subtle hover:bg-white/10"
+                        )}
+                      >
+                        {f === "open" ? "Abiertos" : f === "closed" ? "Cerrados" : "Todos"}
+                      </button>
+                    ))}
+                  </div>
+
+                  {filtered.length === 0 ? (
+                    <p className="text-text-secondary text-sm py-4">
+                      No hay mensajes {messagesFilter === "open" ? "abiertos" : messagesFilter === "closed" ? "cerrados" : ""}.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {filtered.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className="glass-card rounded-2xl p-5 hover:transform-none"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span
+                                  className={cn(
+                                    "w-2 h-2 rounded-full flex-shrink-0",
+                                    msg.status === "open" ? "bg-teal" : "bg-text-secondary/40"
+                                  )}
+                                />
+                                <h3 className="font-sora font-semibold truncate">
+                                  {msg.title}
+                                </h3>
+                                <span
+                                  className={cn(
+                                    "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border",
+                                    msg.status === "open"
+                                      ? "bg-teal/20 text-teal border-teal/30"
+                                      : "bg-white/10 text-text-secondary border-border-subtle"
+                                  )}
+                                >
+                                  {msg.status === "open" ? "Abierto" : "Cerrado"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-xs text-text-secondary mb-2">
+                                <span>{msg.name}</span>
+                                <span className="text-text-secondary/40">&middot;</span>
+                                <span>{msg.email}</span>
+                                <span className="text-text-secondary/40">&middot;</span>
+                                <span className="font-mono">
+                                  {msg.createdAt.toLocaleDateString(undefined, {
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                  })}{" "}
+                                  {msg.createdAt.toLocaleTimeString(undefined, {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm text-text-secondary whitespace-pre-wrap">
+                                {msg.description}
+                              </p>
+                            </div>
+                            <div className="flex-shrink-0">
+                              {msg.status === "open" ? (
+                                <button
+                                  onClick={() => handleUpdateMessageStatus(msg.id, "closed")}
+                                  disabled={actionLoading === msg.id}
+                                  className={cn(
+                                    "px-3 py-2 rounded-full text-xs font-medium transition-all duration-300",
+                                    "bg-red-500/10 text-red-400 border border-red-500/30",
+                                    "hover:bg-red-500 hover:text-white",
+                                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                                  )}
+                                >
+                                  {actionLoading === msg.id ? "..." : "Cerrar"}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleUpdateMessageStatus(msg.id, "open")}
+                                  disabled={actionLoading === msg.id}
+                                  className={cn(
+                                    "px-3 py-2 rounded-full text-xs font-medium transition-all duration-300",
+                                    "bg-white/5 text-text-secondary border border-border-subtle",
+                                    "hover:bg-white/10 hover:text-white",
+                                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                                  )}
+                                >
+                                  {actionLoading === msg.id ? "..." : "Reabrir"}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              );
+            })()}
 
             {/* ═══════════ MONITORING TAB ═══════════ */}
             {activeTab === "monitoring" && (() => {
