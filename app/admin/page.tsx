@@ -123,6 +123,7 @@ export default function AdminPage() {
   // Monitoring tab
   const [monitoringRecords, setMonitoringRecords] = useState<MonitoringRecord[]>([]);
   const [monitoringView, setMonitoringView] = useState<"users" | "schools">("users");
+  const [expandedMonitoringKey, setExpandedMonitoringKey] = useState<string | null>(null);
 
   const publishedIds = new Set(publishedAgents.map((a) => a.id));
 
@@ -1321,27 +1322,64 @@ export default function AdminPage() {
                           }
                         }
 
+                        const isExpanded = expandedMonitoringKey === key;
+
+                        // Individual sessions for this group
+                        const groupSessions = monitoringRecords
+                          .filter((r) => {
+                            if (monitoringView === "users") return r.userId === key;
+                            // by school
+                            const usr = userMap.get(r.userId);
+                            const sid = usr?.schoolId || "__none__";
+                            return sid === key;
+                          })
+                          .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime());
+
                         return (
                           <div
                             key={key}
                             className="glass-card rounded-2xl p-5 hover:transform-none"
                           >
                             {/* Header */}
-                            <div className="flex items-center justify-between mb-4">
-                              <div>
-                                <h3 className="font-sora font-semibold text-white">
-                                  {group.label}
-                                </h3>
-                                {group.subLabel && (
-                                  <p className="text-xs text-text-secondary">{group.subLabel}</p>
-                                )}
+                            <div
+                              className="flex items-center justify-between mb-4 cursor-pointer"
+                              onClick={() => setExpandedMonitoringKey(isExpanded ? null : key)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  className={cn(
+                                    "text-text-secondary transition-transform duration-200",
+                                    isExpanded && "rotate-90"
+                                  )}
+                                >
+                                  <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                                <div>
+                                  <h3 className="font-sora font-semibold text-white">
+                                    {group.label}
+                                  </h3>
+                                  {group.subLabel && (
+                                    <p className="text-xs text-text-secondary">{group.subLabel}</p>
+                                  )}
+                                </div>
                               </div>
-                              <span className="text-sm text-accent font-medium">
-                                Total: {formatDuration(groupTotal)}
-                              </span>
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs text-text-secondary">
+                                  {groupSessions.length} sesiones
+                                </span>
+                                <span className="text-sm text-accent font-medium">
+                                  Total: {formatDuration(groupTotal)}
+                                </span>
+                              </div>
                             </div>
 
-                            {/* Day rows */}
+                            {/* Day rows (aggregated) */}
                             <div className="space-y-3">
                               {sortedDates.map((dateKey) => {
                                 const agents = group.data[dateKey];
@@ -1380,6 +1418,58 @@ export default function AdminPage() {
                                 );
                               })}
                             </div>
+
+                            {/* Expanded: individual sessions */}
+                            {isExpanded && (
+                              <div className="mt-5 pt-5 border-t border-border-subtle">
+                                <h4 className="text-xs text-text-secondary font-medium mb-3">
+                                  Sesiones individuales
+                                </h4>
+                                {groupSessions.length === 0 ? (
+                                  <p className="text-text-secondary/50 text-xs">Sin sesiones.</p>
+                                ) : (
+                                  <div className="space-y-1.5">
+                                    {groupSessions.map((s) => (
+                                      <div
+                                        key={s.id}
+                                        className="flex items-center gap-4 px-4 py-2.5 rounded-xl bg-white/5 border border-border-subtle"
+                                      >
+                                        <span className="text-xs text-white font-medium flex-1 min-w-0 truncate">
+                                          {s.agentName || s.agentId}
+                                        </span>
+                                        {monitoringView === "schools" && (
+                                          <span className="text-[10px] text-text-secondary/60 truncate max-w-[120px]">
+                                            {userMap.get(s.userId)?.name || s.userId}
+                                          </span>
+                                        )}
+                                        <span className="text-xs text-text-secondary/60 font-mono flex-shrink-0">
+                                          {s.startedAt.toLocaleDateString(undefined, {
+                                            day: "2-digit",
+                                            month: "short",
+                                          })}{" "}
+                                          {s.startedAt.toLocaleTimeString(undefined, {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                        <span
+                                          className={cn(
+                                            "text-xs font-mono flex-shrink-0",
+                                            s.durationSeconds != null
+                                              ? "text-accent"
+                                              : "text-text-secondary/40"
+                                          )}
+                                        >
+                                          {s.durationSeconds != null
+                                            ? formatDuration(s.durationSeconds)
+                                            : "en curso"}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
