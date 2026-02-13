@@ -34,9 +34,12 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           {profile && (
             <>
-              <span className="text-sm text-text-secondary hidden sm:block">
+              <Link
+                href="/profile"
+                className="text-sm text-text-secondary hover:text-white transition-colors hidden sm:block"
+              >
                 {profile.name}
-              </span>
+              </Link>
               <Link
                 href="/school"
                 className="text-sm text-text-secondary hover:text-white transition-colors"
@@ -51,6 +54,12 @@ export default function Navbar() {
                   {t("nav.adminPanel")}
                 </Link>
               )}
+              <Link
+                href="/contact"
+                className="text-sm text-text-secondary hover:text-white transition-colors"
+              >
+                {t("nav.contact")}
+              </Link>
               <a
                 href="https://www.timelessmentors.eu/"
                 target="_blank"

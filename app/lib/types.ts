@@ -10,6 +10,7 @@ export interface AgentData {
   description: string;
   avatarUrl: string;
   type: AgentType;
+  year: string;
 }
 
 // ── Subscription plans ───────────────────────────────────────
@@ -40,6 +41,7 @@ export interface UserProfile {
   name: string;
   schoolId: string | null;
   extraAvatarAccess: string[];
+  fav_agents: string[];
   locale: string | null;
   createdAt: Date;
 }

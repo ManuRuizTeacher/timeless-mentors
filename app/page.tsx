@@ -18,6 +18,7 @@ export default function Home() {
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentData | null>(null);
   const [agentsLoading, setAgentsLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   // Fetch agents from Firestore
   useEffect(() => {
@@ -96,6 +97,31 @@ export default function Home() {
       {/* Agent Grid */}
       <section className="px-6 pb-24">
         <div className="max-w-7xl mx-auto">
+          {/* Search bar */}
+          {!agentsLoading && agents.length > 0 && (
+            <div className="mb-8 max-w-md mx-auto relative">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary/50"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t("home.searchPlaceholder")}
+                className="w-full bg-card-bg border border-border-subtle rounded-full pl-11 pr-4 py-3 text-sm text-white placeholder-text-secondary/50 focus:outline-none focus:border-accent transition-colors"
+              />
+            </div>
+          )}
+
           {agentsLoading ? (
             <div className="flex justify-center py-20">
               <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -106,11 +132,22 @@ export default function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Unlocked first, then locked */}
+              {/* Favorites first, then unlocked, then locked */}
               {[...agents]
+                .filter((a) =>
+                  a.name.toLowerCase().includes(search.toLowerCase())
+                )
                 .sort((a, b) => {
                   const aUnlocked = accessibleIds.has(a.id);
                   const bUnlocked = accessibleIds.has(b.id);
+                  const aFav = profile?.fav_agents.includes(a.id) ?? false;
+                  const bFav = profile?.fav_agents.includes(b.id) ?? false;
+                  // Favorites first (among unlocked)
+                  if (aUnlocked && bUnlocked) {
+                    if (aFav && !bFav) return -1;
+                    if (!aFav && bFav) return 1;
+                  }
+                  // Unlocked before locked
                   if (aUnlocked && !bUnlocked) return -1;
                   if (!aUnlocked && bUnlocked) return 1;
                   return 0;

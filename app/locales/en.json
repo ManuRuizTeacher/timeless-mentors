@@ -2,6 +2,7 @@
   "nav.mySchool": "My School",
   "nav.adminPanel": "Admin Panel",
   "nav.webPrincipal": "Main Website",
+  "nav.contact": "Contact",
   "nav.signOut": "Sign Out",
 
   "login.subtitle": "Sign in to talk with your mentors",
@@ -20,6 +21,7 @@
   "home.subtitle": "Choose a mentor and start a real-time conversation. Speak through your microphone and receive instant responses.",
   "home.welcome": "Welcome,",
   "home.noMentors": "No mentors available yet.",
+  "home.searchPlaceholder": "Search mentor by name...",
 
   "school.title": "My",
   "school.titleAccent": "School",
@@ -28,6 +30,8 @@
   "school.noAgents": "No accessible agents with your current plan.",
 
   "agent.startConversation": "Start Conversation",
+  "agent.addFavorite": "Add to favorites",
+  "agent.removeFavorite": "Remove from favorites",
   "agent.contactSales": "Contact sales to upgrade plan",
 
   "simli.back": "Back to mentors",
@@ -39,5 +43,39 @@
   "simli.errorToken": "Error getting token: {status}",
   "simli.errorConnect": "Error connecting to Simli: {status}",
   "simli.errorNoRoom": "Room URL not received",
-  "simli.errorUnknown": "Unknown error while connecting"
+  "simli.errorUnknown": "Unknown error while connecting",
+
+  "profile.title": "My",
+  "profile.titleAccent": "Profile",
+  "profile.name": "Name",
+  "profile.changeName": "Change name",
+  "profile.save": "Save",
+  "profile.cancel": "Cancel",
+  "profile.school": "School",
+  "profile.noSchool": "No school assigned",
+  "profile.plan": "Subscription plan",
+  "profile.upgradePlan": "Upgrade plan",
+  "profile.favMentors": "Favorite mentors",
+  "profile.addMoreMentors": "Add more mentors",
+  "profile.noFavs": "You don't have any favorite mentors yet.",
+  "profile.usageChart": "Usage per day",
+  "profile.noUsage": "No usage data yet.",
+  "profile.recentSessions": "Recent sessions",
+  "profile.noSessions": "You haven't had any sessions yet.",
+
+  "contact.title": "Contact",
+  "contact.titleAccent": "Us",
+  "contact.subtitle": "Fill in the form and we will get back to you as soon as possible.",
+  "contact.fieldTitle": "Subject",
+  "contact.fieldTitlePlaceholder": "E.g.: Question about plans",
+  "contact.fieldName": "Name",
+  "contact.fieldEmail": "Email",
+  "contact.fieldDescription": "Description",
+  "contact.fieldDescriptionPlaceholder": "Describe your inquiry...",
+  "contact.submit": "Send message",
+  "contact.sentTitle": "Message ready",
+  "contact.sentMessage": "Your email client has been opened with the message. If it didn't open, send an email to vicenteruiz@timelessmentors.eu.",
+  "contact.sendAnother": "Send another message",
+  "contact.upgradePlanTitle": "I want to upgrade my plan",
+  "contact.upgradePlanDescription": "Hello Timeless Mentors team,\n\nI would like to upgrade my plan. I'd like to expand my access and connect with more mentors on the platform to make the most of the experience.\n\nThank you"
 }

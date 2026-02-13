@@ -26,7 +26,32 @@ import {
 
 const SIMLI_API_KEY = process.env.NEXT_PUBLIC_SIMLI_API_KEY;
 
-type Tab = "agents" | "schools" | "users";
+type Tab = "agents" | "schools" | "users" | "monitoring";
+
+// ── Monitoring types ────────────────────────────────────────
+
+interface MonitoringRecord {
+  id: string;
+  userId: string;
+  agentId: string;
+  agentName: string;
+  startedAt: Date;
+  endedAt: Date | null;
+  durationSeconds: number | null;
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m < 60) return `${m}m ${s}s`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
+}
+
+function toDateKey(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -78,10 +103,10 @@ export default function AdminPage() {
   const [publishedAgents, setPublishedAgents] = useState<PublishedAgent[]>([]);
   const [editingPublishedId, setEditingPublishedId] = useState<string | null>(null);
   const [editPublishedForm, setEditPublishedForm] = useState<{
-    name: string; title: string; description: string; type: AgentType; avatarUrl: string;
-  }>({ name: "", title: "", description: "", type: "public", avatarUrl: "" });
+    name: string; title: string; description: string; type: AgentType; avatarUrl: string; year: string;
+  }>({ name: "", title: "", description: "", type: "public", avatarUrl: "", year: "" });
   const [editForms, setEditForms] = useState<
-    Record<string, { name: string; title: string; type: AgentType; avatarUrl: string }>
+    Record<string, { name: string; title: string; type: AgentType; avatarUrl: string; year: string }>
   >({});
 
   // Schools tab
@@ -95,6 +120,10 @@ export default function AdminPage() {
 
   // Users tab
   const [users, setUsers] = useState<FirestoreUser[]>([]);
+
+  // Monitoring tab
+  const [monitoringRecords, setMonitoringRecords] = useState<MonitoringRecord[]>([]);
+  const [monitoringView, setMonitoringView] = useState<"users" | "schools">("users");
 
   const publishedIds = new Set(publishedAgents.map((a) => a.id));
 
@@ -138,10 +167,28 @@ export default function AdminPage() {
           name: data.name || "",
           schoolId: data.schoolId ?? null,
           extraAvatarAccess: data.extraAvatarAccess || data.avatarAccess || [],
+          fav_agents: data.fav_agents || [],
+          locale: data.locale ?? null,
           createdAt: data.createdAt?.toDate() || new Date(),
         } as FirestoreUser;
       });
       setUsers(uData);
+
+      // Monitoring
+      const monSnap = await getDocs(collection(db, "monitoring"));
+      const mData = monSnap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          userId: data.userId || "",
+          agentId: data.agentId || "",
+          agentName: data.agentName || "",
+          startedAt: data.startedAt?.toDate() || new Date(),
+          endedAt: data.endedAt?.toDate() || null,
+          durationSeconds: data.durationSeconds ?? null,
+        } as MonitoringRecord;
+      });
+      setMonitoringRecords(mData);
     } catch (err: any) {
       setStatus(`Error cargando datos: ${err.message}`);
     }
@@ -183,6 +230,7 @@ export default function AdminPage() {
       title: "",
       type: "public" as AgentType,
       avatarUrl: autoImage,
+      year: "",
     };
     if (!form.name.trim()) {
       setStatus("El nombre es obligatorio.");
@@ -197,6 +245,7 @@ export default function AdminPage() {
         description: (agent.system_prompt || "").substring(0, 200),
         avatarUrl: form.avatarUrl || autoImage,
         type: form.type,
+        year: form.year.trim(),
       });
       setStatus(`Agente "${form.name}" publicado como ${form.type}.`);
       await fetchAll();
@@ -254,6 +303,7 @@ export default function AdminPage() {
         description: editPublishedForm.description.trim(),
         type: editPublishedForm.type,
         avatarUrl: editPublishedForm.avatarUrl.trim(),
+        year: editPublishedForm.year.trim(),
       });
       setStatus("Agente actualizado.");
       setEditingPublishedId(null);
@@ -302,7 +352,7 @@ export default function AdminPage() {
 
   const updateForm = (
     agentId: string,
-    field: "name" | "title" | "type" | "avatarUrl",
+    field: "name" | "title" | "type" | "avatarUrl" | "year",
     value: string
   ) => {
     setEditForms((prev) => ({
@@ -312,6 +362,7 @@ export default function AdminPage() {
         title: prev[agentId]?.title ?? "",
         type: (prev[agentId]?.type ?? "public") as AgentType,
         avatarUrl: prev[agentId]?.avatarUrl ?? "",
+        year: prev[agentId]?.year ?? "",
         [field]: value,
       },
     }));
@@ -324,6 +375,7 @@ export default function AdminPage() {
         title: "",
         type: "public" as AgentType,
         avatarUrl: extractSimliImage(agent),
+        year: "",
       }
     );
   };
@@ -511,6 +563,9 @@ export default function AdminPage() {
             <button className={tabClasses("users")} onClick={() => setActiveTab("users")}>
               Usuarios
             </button>
+            <button className={tabClasses("monitoring")} onClick={() => setActiveTab("monitoring")}>
+              Monitoring
+            </button>
           </div>
         </div>
       </div>
@@ -572,6 +627,11 @@ export default function AdminPage() {
                                       — {pub.title}
                                     </span>
                                   )}
+                                  {pub?.year && (
+                                    <span className="text-text-secondary/60 text-xs font-mono">
+                                      ({pub.year})
+                                    </span>
+                                  )}
                                   {pub?.type && (
                                     <span
                                       className={cn(
@@ -612,6 +672,7 @@ export default function AdminPage() {
                                         description: pub?.description || "",
                                         type: pub?.type || "public",
                                         avatarUrl: pub?.avatarUrl || "",
+                                        year: pub?.year || "",
                                       });
                                     }
                                   }}
@@ -667,6 +728,16 @@ export default function AdminPage() {
                                       <option value="premium">Premium</option>
                                       <option value="custom">Custom</option>
                                     </select>
+                                  </div>
+                                  <div className="w-36">
+                                    <label className="block text-xs text-text-secondary mb-1">Epoca / Ano</label>
+                                    <input
+                                      type="text"
+                                      value={editPublishedForm.year}
+                                      onChange={(e) => setEditPublishedForm((p) => ({ ...p, year: e.target.value }))}
+                                      placeholder="Ej: 384-322 a.C."
+                                      className="w-full bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-white placeholder-text-secondary/50 focus:outline-none focus:border-accent transition-colors"
+                                    />
                                   </div>
                                 </div>
                                 <div>
@@ -809,6 +880,22 @@ export default function AdminPage() {
                                     className="w-full bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-white placeholder-text-secondary/50 focus:outline-none focus:border-accent transition-colors"
                                   />
                                 </div>
+                                <div className="w-36">
+                                  <label className="block text-xs text-text-secondary mb-1">
+                                    Epoca / Ano
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={form.year}
+                                    onChange={(e) =>
+                                      updateForm(agent.id, "year", e.target.value)
+                                    }
+                                    placeholder="Ej: 384-322 a.C."
+                                    className="w-full bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-white placeholder-text-secondary/50 focus:outline-none focus:border-accent transition-colors"
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-end gap-3">
                                 <div className="w-32">
                                   <label className="block text-xs text-text-secondary mb-1">
                                     Tipo
@@ -1140,6 +1227,170 @@ export default function AdminPage() {
                 )}
               </section>
             )}
+
+            {/* ═══════════ MONITORING TAB ═══════════ */}
+            {activeTab === "monitoring" && (() => {
+              // Build lookup maps
+              const userMap = new Map(users.map((u) => [u.uid, u]));
+              const schoolMap = new Map(schools.map((s) => [s.id, s]));
+
+              // Aggregate: { [groupKey]: { [dateKey]: { [agentName]: totalSeconds } } }
+              type DayAgentMap = Record<string, Record<string, number>>;
+              type GroupMap = Record<string, { label: string; subLabel?: string; data: DayAgentMap }>;
+
+              const byUser: GroupMap = {};
+              const bySchool: GroupMap = {};
+
+              for (const rec of monitoringRecords) {
+                const secs = rec.durationSeconds ?? 0;
+                if (secs === 0 && !rec.endedAt) continue; // session still open or no data
+                const dateKey = toDateKey(rec.startedAt);
+                const agentLabel = rec.agentName || rec.agentId;
+
+                // By user
+                const usr = userMap.get(rec.userId);
+                const userName = usr?.name || rec.userId;
+                const userEmail = usr?.email || "";
+                if (!byUser[rec.userId]) {
+                  byUser[rec.userId] = { label: userName, subLabel: userEmail, data: {} };
+                }
+                if (!byUser[rec.userId].data[dateKey]) byUser[rec.userId].data[dateKey] = {};
+                byUser[rec.userId].data[dateKey][agentLabel] = (byUser[rec.userId].data[dateKey][agentLabel] || 0) + secs;
+
+                // By school
+                const schoolId = usr?.schoolId || "__none__";
+                const sch = schoolId !== "__none__" ? schoolMap.get(schoolId) : null;
+                const schoolLabel = sch?.name || "Sin escuela";
+                if (!bySchool[schoolId]) {
+                  bySchool[schoolId] = { label: schoolLabel, data: {} };
+                }
+                if (!bySchool[schoolId].data[dateKey]) bySchool[schoolId].data[dateKey] = {};
+                bySchool[schoolId].data[dateKey][agentLabel] = (bySchool[schoolId].data[dateKey][agentLabel] || 0) + secs;
+              }
+
+              const groups = monitoringView === "users" ? byUser : bySchool;
+              const sortedGroupKeys = Object.keys(groups).sort((a, b) =>
+                groups[a].label.localeCompare(groups[b].label)
+              );
+
+              return (
+                <section>
+                  {/* Sub-view toggle */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <h2 className="font-sora font-semibold text-lg text-accent mr-2">
+                      Monitoring
+                    </h2>
+                    <button
+                      onClick={() => setMonitoringView("users")}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-xs font-medium border transition-all duration-200",
+                        monitoringView === "users"
+                          ? "bg-accent/20 text-accent border-accent/40"
+                          : "bg-white/5 text-text-secondary border-border-subtle hover:bg-white/10"
+                      )}
+                    >
+                      Por Usuario
+                    </button>
+                    <button
+                      onClick={() => setMonitoringView("schools")}
+                      className={cn(
+                        "px-4 py-1.5 rounded-full text-xs font-medium border transition-all duration-200",
+                        monitoringView === "schools"
+                          ? "bg-accent/20 text-accent border-accent/40"
+                          : "bg-white/5 text-text-secondary border-border-subtle hover:bg-white/10"
+                      )}
+                    >
+                      Por Escuela
+                    </button>
+                    <span className="text-text-secondary/60 text-xs ml-auto">
+                      {monitoringRecords.length} sesiones registradas
+                    </span>
+                  </div>
+
+                  {sortedGroupKeys.length === 0 ? (
+                    <p className="text-text-secondary text-sm py-4">
+                      No hay datos de monitoring todavia.
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {sortedGroupKeys.map((key) => {
+                        const group = groups[key];
+                        const sortedDates = Object.keys(group.data).sort().reverse();
+                        // Total across all days
+                        let groupTotal = 0;
+                        for (const d of sortedDates) {
+                          for (const secs of Object.values(group.data[d])) {
+                            groupTotal += secs;
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={key}
+                            className="glass-card rounded-2xl p-5 hover:transform-none"
+                          >
+                            {/* Header */}
+                            <div className="flex items-center justify-between mb-4">
+                              <div>
+                                <h3 className="font-sora font-semibold text-white">
+                                  {group.label}
+                                </h3>
+                                {group.subLabel && (
+                                  <p className="text-xs text-text-secondary">{group.subLabel}</p>
+                                )}
+                              </div>
+                              <span className="text-sm text-accent font-medium">
+                                Total: {formatDuration(groupTotal)}
+                              </span>
+                            </div>
+
+                            {/* Day rows */}
+                            <div className="space-y-3">
+                              {sortedDates.map((dateKey) => {
+                                const agents = group.data[dateKey];
+                                const sortedAgents = Object.entries(agents).sort(
+                                  (a, b) => b[1] - a[1]
+                                );
+                                const dayTotal = sortedAgents.reduce((sum, [, s]) => sum + s, 0);
+
+                                return (
+                                  <div key={dateKey}>
+                                    <div className="flex items-center gap-3 mb-2">
+                                      <span className="text-xs font-mono text-text-secondary/80 w-24 flex-shrink-0">
+                                        {dateKey}
+                                      </span>
+                                      <div className="h-px flex-1 bg-border-subtle" />
+                                      <span className="text-xs text-text-secondary font-medium flex-shrink-0">
+                                        {formatDuration(dayTotal)}
+                                      </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 ml-[6.5rem]">
+                                      {sortedAgents.map(([agentName, secs]) => (
+                                        <div
+                                          key={agentName}
+                                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-border-subtle"
+                                        >
+                                          <span className="text-xs text-white font-medium">
+                                            {agentName}
+                                          </span>
+                                          <span className="text-[10px] text-accent font-mono">
+                                            {formatDuration(secs)}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+              );
+            })()}
           </>
         )}
       </div>

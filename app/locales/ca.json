@@ -2,6 +2,7 @@
   "nav.mySchool": "La Meva Escola",
   "nav.adminPanel": "Admin Panel",
   "nav.webPrincipal": "Web Principal",
+  "nav.contact": "Contacte",
   "nav.signOut": "Tancar Sessio",
 
   "login.subtitle": "Inicia sessio per parlar amb els teus mentors",
@@ -20,6 +21,7 @@
   "home.subtitle": "Tria un mentor i comenca una conversa en temps real. Parla pel teu microfon i rep respostes instantanies.",
   "home.welcome": "Benvingut,",
   "home.noMentors": "No hi ha mentors disponibles encara.",
+  "home.searchPlaceholder": "Cercar mentor per nom...",
 
   "school.title": "La Meva",
   "school.titleAccent": "Escola",
@@ -28,6 +30,8 @@
   "school.noAgents": "No hi ha agents accessibles amb el teu pla actual.",
 
   "agent.startConversation": "Iniciar Conversa",
+  "agent.addFavorite": "Afegir a favorits",
+  "agent.removeFavorite": "Treure de favorits",
   "agent.contactSales": "Contacta amb vendes per millorar el teu pla",
 
   "simli.back": "Tornar als mentors",
@@ -39,5 +43,39 @@
   "simli.errorToken": "Error en obtenir token: {status}",
   "simli.errorConnect": "Error en connectar amb Simli: {status}",
   "simli.errorNoRoom": "No s'ha rebut URL de la sala",
-  "simli.errorUnknown": "Error desconegut en connectar"
+  "simli.errorUnknown": "Error desconegut en connectar",
+
+  "profile.title": "El Meu",
+  "profile.titleAccent": "Perfil",
+  "profile.name": "Nom",
+  "profile.changeName": "Canviar nom",
+  "profile.save": "Desar",
+  "profile.cancel": "Cancel·lar",
+  "profile.school": "Centre docent",
+  "profile.noSchool": "Sense centre assignat",
+  "profile.plan": "Pla de subscripcio",
+  "profile.upgradePlan": "Millorar pla",
+  "profile.favMentors": "Mentors favorits",
+  "profile.addMoreMentors": "Afegir mes mentors",
+  "profile.noFavs": "Encara no tens mentors favorits.",
+  "profile.usageChart": "Us per dia",
+  "profile.noUsage": "Encara no hi ha dades d'us.",
+  "profile.recentSessions": "Ultimes sessions",
+  "profile.noSessions": "Encara no has tingut cap sessio.",
+
+  "contact.title": "Contacta amb",
+  "contact.titleAccent": "Nosaltres",
+  "contact.subtitle": "Omple el formulari i ens posarem en contacte amb tu el mes aviat possible.",
+  "contact.fieldTitle": "Titol",
+  "contact.fieldTitlePlaceholder": "Ex: Consulta sobre plans",
+  "contact.fieldName": "Nom",
+  "contact.fieldEmail": "Correu electronic",
+  "contact.fieldDescription": "Descripcio",
+  "contact.fieldDescriptionPlaceholder": "Descriu la teva consulta...",
+  "contact.submit": "Enviar missatge",
+  "contact.sentTitle": "Missatge preparat",
+  "contact.sentMessage": "S'ha obert el teu client de correu amb el missatge. Si no s'ha obert, envia un email a vicenteruiz@timelessmentors.eu.",
+  "contact.sendAnother": "Enviar un altre missatge",
+  "contact.upgradePlanTitle": "Vull millorar el meu pla",
+  "contact.upgradePlanDescription": "Hola equip de Timeless Mentors,\n\nVull millorar el meu pla. M'agradaria ampliar l'accés i poder connectar amb més mentors dins de la plataforma per seguir aprofitant al màxim l'experiència.\n\nGràcies"
 }

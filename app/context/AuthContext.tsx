@@ -13,7 +13,7 @@ import {
   signOut as firebaseSignOut,
   User,
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import { UserProfile, SchoolProfile, SubscriptionPlan } from "../lib/types";
 
@@ -24,6 +24,7 @@ interface AuthContextValue {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  toggleFavorite: (agentId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -57,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: "TEST",
               schoolId: null,
               extraAvatarAccess: [],
+              fav_agents: [],
               createdAt: serverTimestamp(),
             };
             await setDoc(docRef, defaultProfile);
@@ -66,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: "TEST",
               schoolId: null,
               extraAvatarAccess: [],
+              fav_agents: [],
               locale: null,
               createdAt: new Date(),
             };
@@ -77,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: data.name,
               schoolId: data.schoolId ?? null,
               extraAvatarAccess: data.extraAvatarAccess || [],
+              fav_agents: data.fav_agents || [],
               locale: data.locale ?? null,
               createdAt: data.createdAt?.toDate() || new Date(),
             };
@@ -124,8 +128,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await firebaseSignOut(auth);
   };
 
+  const toggleFavorite = async (agentId: string) => {
+    if (!user || !profile) return;
+    const isFav = profile.fav_agents.includes(agentId);
+    const ref = doc(db, "users", user.uid);
+    if (isFav) {
+      await updateDoc(ref, { fav_agents: arrayRemove(agentId) });
+      setProfile((prev) =>
+        prev ? { ...prev, fav_agents: prev.fav_agents.filter((id) => id !== agentId) } : prev
+      );
+    } else {
+      await updateDoc(ref, { fav_agents: arrayUnion(agentId) });
+      setProfile((prev) =>
+        prev ? { ...prev, fav_agents: [...prev.fav_agents, agentId] } : prev
+      );
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, school, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, school, loading, signIn, signOut, toggleFavorite }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,6 +2,7 @@
   "nav.mySchool": "Mi Escuela",
   "nav.adminPanel": "Admin Panel",
   "nav.webPrincipal": "Web Principal",
+  "nav.contact": "Contacto",
   "nav.signOut": "Cerrar Sesion",
 
   "login.subtitle": "Inicia sesion para hablar con tus mentores",
@@ -20,6 +21,7 @@
   "home.subtitle": "Elige un mentor y empieza una conversacion en tiempo real. Habla por tu microfono y recibe respuestas instantaneas.",
   "home.welcome": "Bienvenido,",
   "home.noMentors": "No hay mentores disponibles todavia.",
+  "home.searchPlaceholder": "Buscar mentor por nombre...",
 
   "school.title": "Mi",
   "school.titleAccent": "Escuela",
@@ -28,6 +30,8 @@
   "school.noAgents": "No hay agentes accesibles con tu plan actual.",
 
   "agent.startConversation": "Iniciar Conversacion",
+  "agent.addFavorite": "Anadir a favoritos",
+  "agent.removeFavorite": "Quitar de favoritos",
   "agent.contactSales": "Contacta con ventas para mejorar tu plan",
 
   "simli.back": "Volver a mentores",
@@ -39,5 +43,39 @@
   "simli.errorToken": "Error al obtener token: {status}",
   "simli.errorConnect": "Error al conectar con Simli: {status}",
   "simli.errorNoRoom": "No se recibio URL de la sala",
-  "simli.errorUnknown": "Error desconocido al conectar"
+  "simli.errorUnknown": "Error desconocido al conectar",
+
+  "profile.title": "Mi",
+  "profile.titleAccent": "Perfil",
+  "profile.name": "Nombre",
+  "profile.changeName": "Cambiar nombre",
+  "profile.save": "Guardar",
+  "profile.cancel": "Cancelar",
+  "profile.school": "Centro docente",
+  "profile.noSchool": "Sin centro asignado",
+  "profile.plan": "Plan de suscripcion",
+  "profile.upgradePlan": "Mejorar plan",
+  "profile.favMentors": "Mentores favoritos",
+  "profile.addMoreMentors": "Anadir mas mentores",
+  "profile.noFavs": "Todavia no tienes mentores favoritos.",
+  "profile.usageChart": "Uso por dia",
+  "profile.noUsage": "Todavia no hay datos de uso.",
+  "profile.recentSessions": "Ultimas sesiones",
+  "profile.noSessions": "Todavia no has tenido ninguna sesion.",
+
+  "contact.title": "Contacta con",
+  "contact.titleAccent": "Nosotros",
+  "contact.subtitle": "Rellena el formulario y nos pondremos en contacto contigo lo antes posible.",
+  "contact.fieldTitle": "Titulo",
+  "contact.fieldTitlePlaceholder": "Ej: Consulta sobre planes",
+  "contact.fieldName": "Nombre",
+  "contact.fieldEmail": "Correo electronico",
+  "contact.fieldDescription": "Descripcion",
+  "contact.fieldDescriptionPlaceholder": "Describe tu consulta...",
+  "contact.submit": "Enviar mensaje",
+  "contact.sentTitle": "Mensaje preparado",
+  "contact.sentMessage": "Se ha abierto tu cliente de correo con el mensaje. Si no se ha abierto, envia un email a vicenteruiz@timelessmentors.eu.",
+  "contact.sendAnother": "Enviar otro mensaje",
+  "contact.upgradePlanTitle": "Quiero mejorar mi plan",
+  "contact.upgradePlanDescription": "Hola equipo de Timeless Mentors,\n\nQuiero mejorar mi plan. Me gustaría ampliar el acceso y poder conectar con más mentores dentro de la plataforma para seguir aprovechando al máximo la experiencia.\n\nGracias"
 }

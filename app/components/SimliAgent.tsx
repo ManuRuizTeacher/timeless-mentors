@@ -1,8 +1,11 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { DailyProvider } from "@daily-co/daily-react";
 import DailyIframe, { DailyCall } from "@daily-co/daily-js";
+import { doc, addDoc, updateDoc, collection, serverTimestamp, Timestamp } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import { useAuth } from "../context/AuthContext";
 import VideoBox from "./VideoBox";
 import { AgentData } from "../lib/types";
 import cn from "../utils/cn";
@@ -17,6 +20,7 @@ const SIMLI_API_KEY = process.env.NEXT_PUBLIC_SIMLI_API_KEY;
 
 const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [callObject, setCallObject] = useState<DailyCall | null>(null);
@@ -24,6 +28,85 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const myCallObjRef = useRef<DailyCall | null>(null);
 
+  // Monitoring refs
+  const sessionDocIdRef = useRef<string | null>(null);
+  const sessionStartRef = useRef<number | null>(null);
+
+  // ── Monitoring helpers ──────────────────────────────────────
+  const startMonitoring = useCallback(async () => {
+    if (!user) return;
+    try {
+      const docRef = await addDoc(collection(db, "monitoring"), {
+        userId: user.uid,
+        agentId: mentor.id,
+        agentName: mentor.name,
+        startedAt: serverTimestamp(),
+        endedAt: null,
+        durationSeconds: null,
+      });
+      sessionDocIdRef.current = docRef.id;
+      sessionStartRef.current = Date.now();
+    } catch (err) {
+      console.error("Error creating monitoring doc:", err);
+    }
+  }, [user, mentor]);
+
+  const endMonitoring = useCallback(async () => {
+    const docId = sessionDocIdRef.current;
+    const startMs = sessionStartRef.current;
+    if (!docId || !startMs) return;
+
+    // Clear refs immediately to prevent double-ending
+    sessionDocIdRef.current = null;
+    sessionStartRef.current = null;
+
+    const durationSeconds = Math.round((Date.now() - startMs) / 1000);
+    try {
+      await updateDoc(doc(db, "monitoring", docId), {
+        endedAt: serverTimestamp(),
+        durationSeconds,
+      });
+    } catch (err) {
+      console.error("Error updating monitoring doc:", err);
+    }
+  }, []);
+
+  // End monitoring on page unload or component unmount
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const docId = sessionDocIdRef.current;
+      const startMs = sessionStartRef.current;
+      if (!docId || !startMs) return;
+      const durationSeconds = Math.round((Date.now() - startMs) / 1000);
+      // Use sendBeacon for reliable delivery on page close
+      const payload = JSON.stringify({
+        docId,
+        durationSeconds,
+      });
+      // Fallback: fire-and-forget updateDoc (may not complete)
+      updateDoc(doc(db, "monitoring", docId), {
+        endedAt: Timestamp.now(),
+        durationSeconds,
+      }).catch(() => {});
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      // Component unmount — end any active session
+      if (sessionDocIdRef.current && sessionStartRef.current) {
+        const docId = sessionDocIdRef.current;
+        const startMs = sessionStartRef.current;
+        const durationSeconds = Math.round((Date.now() - startMs) / 1000);
+        updateDoc(doc(db, "monitoring", docId), {
+          endedAt: Timestamp.now(),
+          durationSeconds,
+        }).catch(() => {});
+      }
+    };
+  }, []);
+
+  // ── Session handlers ──────────────────────────────────────
   const handleStart = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -100,14 +183,16 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
           setChatbotId(participant.session_id);
           setIsLoading(false);
           setIsConnected(true);
+          startMonitoring();
           return;
         }
       }
     }
     setTimeout(pollForChatbot, 500);
-  }, []);
+  }, [startMonitoring]);
 
   const handleStop = useCallback(async () => {
+    await endMonitoring();
     if (callObject) {
       await callObject.leave();
       await callObject.destroy();
@@ -117,7 +202,7 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
       setIsLoading(false);
     }
     onClose();
-  }, [callObject, onClose]);
+  }, [callObject, onClose, endMonitoring]);
 
   return (
     <div className="fixed inset-0 z-50 bg-primary/95 backdrop-blur-xl flex flex-col">
