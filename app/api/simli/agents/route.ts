@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const SIMLI_API_KEY = process.env.SIMLI_API_KEY;
 
 export async function GET() {
@@ -9,6 +11,7 @@ export async function GET() {
 
   const res = await fetch("https://api.simli.ai/agents", {
     headers: { "x-simli-api-key": SIMLI_API_KEY },
+    cache: "no-store",
   });
 
   if (!res.ok) {
