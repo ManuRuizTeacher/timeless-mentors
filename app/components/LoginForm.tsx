@@ -27,7 +27,7 @@ export default function LoginForm() {
       } else if (code === "auth/invalid-email") {
         setError(t("login.errorInvalidEmail"));
       } else {
-        setError(t("login.errorGeneric"));
+        setError(t("login.errorGeneric") + " [" + (err?.code || err?.message || String(err)) + "]");
       }
     }
     setLoading(false);
