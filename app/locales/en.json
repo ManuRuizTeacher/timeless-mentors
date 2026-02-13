@@ -1,0 +1,43 @@
+{
+  "nav.mySchool": "My School",
+  "nav.adminPanel": "Admin Panel",
+  "nav.webPrincipal": "Main Website",
+  "nav.signOut": "Sign Out",
+
+  "login.subtitle": "Sign in to talk with your mentors",
+  "login.email": "Email",
+  "login.password": "Password",
+  "login.emailPlaceholder": "you@email.com",
+  "login.passwordPlaceholder": "Your password",
+  "login.submit": "Sign In",
+  "login.loading": "Loading...",
+  "login.errorInvalidCredentials": "Incorrect email or password",
+  "login.errorInvalidEmail": "Invalid email",
+  "login.errorGeneric": "Connection error. Please try again.",
+
+  "home.title": "Talk to your",
+  "home.titleAccent": "Mentors",
+  "home.subtitle": "Choose a mentor and start a real-time conversation. Speak through your microphone and receive instant responses.",
+  "home.welcome": "Welcome,",
+  "home.noMentors": "No mentors available yet.",
+
+  "school.title": "My",
+  "school.titleAccent": "School",
+  "school.noSchool": "You don't belong to any school.",
+  "school.accessibleAgents": "Accessible agents",
+  "school.noAgents": "No accessible agents with your current plan.",
+
+  "agent.startConversation": "Start Conversation",
+  "agent.contactSales": "Contact sales to upgrade plan",
+
+  "simli.back": "Back to mentors",
+  "simli.connecting": "Connecting with {name}...",
+  "simli.connectingShort": "Connecting...",
+  "simli.startConversation": "Start Conversation",
+  "simli.endConversation": "End Conversation",
+  "simli.inProgress": "Conversation in progress — speak through your microphone",
+  "simli.errorToken": "Error getting token: {status}",
+  "simli.errorConnect": "Error connecting to Simli: {status}",
+  "simli.errorNoRoom": "Room URL not received",
+  "simli.errorUnknown": "Unknown error while connecting"
+}

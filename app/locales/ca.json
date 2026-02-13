@@ -1,0 +1,43 @@
+{
+  "nav.mySchool": "La Meva Escola",
+  "nav.adminPanel": "Admin Panel",
+  "nav.webPrincipal": "Web Principal",
+  "nav.signOut": "Tancar Sessio",
+
+  "login.subtitle": "Inicia sessio per parlar amb els teus mentors",
+  "login.email": "Email",
+  "login.password": "Contrasenya",
+  "login.emailPlaceholder": "tu@email.com",
+  "login.passwordPlaceholder": "La teva contrasenya",
+  "login.submit": "Iniciar Sessio",
+  "login.loading": "Carregant...",
+  "login.errorInvalidCredentials": "Email o contrasenya incorrectes",
+  "login.errorInvalidEmail": "Email no valid",
+  "login.errorGeneric": "Error en connectar. Torna-ho a provar.",
+
+  "home.title": "Parla amb els teus",
+  "home.titleAccent": "Mentors",
+  "home.subtitle": "Tria un mentor i comenca una conversa en temps real. Parla pel teu microfon i rep respostes instantanies.",
+  "home.welcome": "Benvingut,",
+  "home.noMentors": "No hi ha mentors disponibles encara.",
+
+  "school.title": "La Meva",
+  "school.titleAccent": "Escola",
+  "school.noSchool": "No pertanys a cap escola.",
+  "school.accessibleAgents": "Agents accessibles",
+  "school.noAgents": "No hi ha agents accessibles amb el teu pla actual.",
+
+  "agent.startConversation": "Iniciar Conversa",
+  "agent.contactSales": "Contacta amb vendes per millorar el teu pla",
+
+  "simli.back": "Tornar als mentors",
+  "simli.connecting": "Connectant amb {name}...",
+  "simli.connectingShort": "Connectant...",
+  "simli.startConversation": "Iniciar Conversa",
+  "simli.endConversation": "Finalitzar Conversa",
+  "simli.inProgress": "Conversa en curs — parla pel teu microfon",
+  "simli.errorToken": "Error en obtenir token: {status}",
+  "simli.errorConnect": "Error en connectar amb Simli: {status}",
+  "simli.errorNoRoom": "No s'ha rebut URL de la sala",
+  "simli.errorUnknown": "Error desconegut en connectar"
+}

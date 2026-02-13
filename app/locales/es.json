@@ -1,0 +1,43 @@
+{
+  "nav.mySchool": "Mi Escuela",
+  "nav.adminPanel": "Admin Panel",
+  "nav.webPrincipal": "Web Principal",
+  "nav.signOut": "Cerrar Sesion",
+
+  "login.subtitle": "Inicia sesion para hablar con tus mentores",
+  "login.email": "Email",
+  "login.password": "Contrasena",
+  "login.emailPlaceholder": "tu@email.com",
+  "login.passwordPlaceholder": "Tu contrasena",
+  "login.submit": "Iniciar Sesion",
+  "login.loading": "Cargando...",
+  "login.errorInvalidCredentials": "Email o contrasena incorrectos",
+  "login.errorInvalidEmail": "Email no valido",
+  "login.errorGeneric": "Error al conectar. Intentalo de nuevo.",
+
+  "home.title": "Habla con tus",
+  "home.titleAccent": "Mentores",
+  "home.subtitle": "Elige un mentor y empieza una conversacion en tiempo real. Habla por tu microfono y recibe respuestas instantaneas.",
+  "home.welcome": "Bienvenido,",
+  "home.noMentors": "No hay mentores disponibles todavia.",
+
+  "school.title": "Mi",
+  "school.titleAccent": "Escuela",
+  "school.noSchool": "No perteneces a ninguna escuela.",
+  "school.accessibleAgents": "Agentes accesibles",
+  "school.noAgents": "No hay agentes accesibles con tu plan actual.",
+
+  "agent.startConversation": "Iniciar Conversacion",
+  "agent.contactSales": "Contacta con ventas para mejorar tu plan",
+
+  "simli.back": "Volver a mentores",
+  "simli.connecting": "Conectando con {name}...",
+  "simli.connectingShort": "Conectando...",
+  "simli.startConversation": "Iniciar Conversacion",
+  "simli.endConversation": "Finalizar Conversacion",
+  "simli.inProgress": "Conversacion en curso — habla por tu microfono",
+  "simli.errorToken": "Error al obtener token: {status}",
+  "simli.errorConnect": "Error al conectar con Simli: {status}",
+  "simli.errorNoRoom": "No se recibio URL de la sala",
+  "simli.errorUnknown": "Error desconocido al conectar"
+}
