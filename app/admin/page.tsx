@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { initializeApp, deleteApp } from "firebase/app";
+import {
+  getAuth as getFirebaseAuth,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import {
   collection,
   doc,
@@ -12,8 +17,9 @@ import {
   addDoc,
   query,
   orderBy,
+  serverTimestamp,
 } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db, firebaseConfig } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import cn from "../utils/cn";
@@ -132,6 +138,13 @@ export default function AdminPage() {
 
   // Users tab
   const [users, setUsers] = useState<FirestoreUser[]>([]);
+  const [createUserForm, setCreateUserForm] = useState({
+    email: "",
+    password: "",
+    name: "",
+    schoolId: "",
+  });
+  const [createUserLoading, setCreateUserLoading] = useState(false);
 
   // Monitoring tab
   const [monitoringRecords, setMonitoringRecords] = useState<MonitoringRecord[]>([]);
@@ -529,6 +542,58 @@ export default function AdminPage() {
       setStatus(`Error: ${err.message}`);
     }
     setActionLoading(null);
+  };
+
+  const handleCreateUser = async () => {
+    const { email, password, name, schoolId } = createUserForm;
+    if (!email.trim() || !name.trim()) {
+      setStatus("Email y nombre son obligatorios.");
+      return;
+    }
+    if (password.length < 6) {
+      setStatus("La contrasena debe tener al menos 6 caracteres.");
+      return;
+    }
+    setCreateUserLoading(true);
+    let secondaryApp;
+    try {
+      secondaryApp = initializeApp(firebaseConfig, `secondary-${Date.now()}`);
+      const secondaryAuth = getFirebaseAuth(secondaryApp);
+      const cred = await createUserWithEmailAndPassword(
+        secondaryAuth,
+        email.trim(),
+        password
+      );
+      await setDoc(doc(db, "users", cred.user.uid), {
+        uid: cred.user.uid,
+        email: email.trim(),
+        name: name.trim(),
+        schoolId: schoolId || null,
+        extraAvatarAccess: [],
+        fav_agents: [],
+        locale: null,
+        createdAt: serverTimestamp(),
+      });
+      setStatus(`Usuario "${name.trim()}" creado correctamente.`);
+      setCreateUserForm({ email: "", password: "", name: "", schoolId: "" });
+      await fetchAll();
+    } catch (err: any) {
+      const code = err.code || "";
+      if (code === "auth/email-already-in-use") {
+        setStatus("Error: ese email ya esta registrado.");
+      } else if (code === "auth/invalid-email") {
+        setStatus("Error: email invalido.");
+      } else if (code === "auth/weak-password") {
+        setStatus("Error: contrasena demasiado debil (min 6 caracteres).");
+      } else {
+        setStatus(`Error al crear usuario: ${err.message}`);
+      }
+    } finally {
+      if (secondaryApp) {
+        await deleteApp(secondaryApp).catch(() => {});
+      }
+      setCreateUserLoading(false);
+    }
   };
 
   // ════════════════════════════════════════════════════════════
@@ -1188,7 +1253,90 @@ export default function AdminPage() {
 
             {/* ═══════════ USERS TAB ═══════════ */}
             {activeTab === "users" && (
-              <section>
+              <>
+                {/* Create user form */}
+                <section className="glass-card rounded-2xl p-6 mb-8">
+                  <h2 className="font-sora font-semibold text-lg mb-4">
+                    Crear Usuario
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-xs text-text-secondary mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={createUserForm.email}
+                        onChange={(e) =>
+                          setCreateUserForm((p) => ({ ...p, email: e.target.value }))
+                        }
+                        placeholder="usuario@ejemplo.com"
+                        className="w-full bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-white placeholder-text-secondary/50 focus:outline-none focus:border-accent transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-text-secondary mb-1">
+                        Contrasena
+                      </label>
+                      <input
+                        type="password"
+                        value={createUserForm.password}
+                        onChange={(e) =>
+                          setCreateUserForm((p) => ({ ...p, password: e.target.value }))
+                        }
+                        placeholder="Min 6 caracteres"
+                        className="w-full bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-white placeholder-text-secondary/50 focus:outline-none focus:border-accent transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-text-secondary mb-1">
+                        Nombre
+                      </label>
+                      <input
+                        type="text"
+                        value={createUserForm.name}
+                        onChange={(e) =>
+                          setCreateUserForm((p) => ({ ...p, name: e.target.value }))
+                        }
+                        placeholder="Nombre del usuario"
+                        className="w-full bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-white placeholder-text-secondary/50 focus:outline-none focus:border-accent transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-text-secondary mb-1">
+                        Escuela (opcional)
+                      </label>
+                      <select
+                        value={createUserForm.schoolId}
+                        onChange={(e) =>
+                          setCreateUserForm((p) => ({ ...p, schoolId: e.target.value }))
+                        }
+                        className="w-full bg-primary border border-border-subtle rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-accent transition-colors"
+                      >
+                        <option value="">Sin escuela</option>
+                        {schools.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} ({s.subscriptionPlan})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCreateUser}
+                    disabled={createUserLoading}
+                    className={cn(
+                      "px-5 py-2 rounded-full text-sm font-medium transition-all duration-300",
+                      "bg-accent text-white hover:bg-accent-hover",
+                      "disabled:opacity-50 disabled:cursor-not-allowed"
+                    )}
+                  >
+                    {createUserLoading ? "Creando..." : "Crear Usuario"}
+                  </button>
+                </section>
+
+                {/* Users list */}
+                <section>
                 <h2 className="font-sora font-semibold text-lg mb-4 text-accent">
                   Usuarios ({users.length})
                 </h2>
@@ -1286,6 +1434,7 @@ export default function AdminPage() {
                   </div>
                 )}
               </section>
+              </>
             )}
 
             {/* ═══════════ MESSAGES TAB ═══════════ */}

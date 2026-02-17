@@ -111,32 +111,33 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
     setError(null);
 
     try {
-      // Step 1: Get a session token via server-side proxy
-      const tokenResponse = await fetch("/api/simli/token", {
+      // Step 1: Fetch agent config from Simli to get face_id, voice_id, etc.
+      const agentsRes = await fetch("/api/simli/agents");
+      if (!agentsRes.ok) throw new Error("Failed to fetch agents");
+      const agents = await agentsRes.json();
+      const agentConfig = agents.find((a: any) => a.id === mentor.agentId);
+      if (!agentConfig) throw new Error("Agent not found in Simli");
+
+      // Step 2: Start session via server-side proxy
+      const response = await fetch("/api/simli/start", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          faceId: agentConfig.face_id,
+          voiceId: agentConfig.voice_id,
+          voiceModel: agentConfig.voice_model,
+          ttsProvider: agentConfig.voice_provider === "cartesia" ? "Cartesia" : agentConfig.voice_provider === "elevenlabs" ? "ElevenLabs" : "Cartesia",
+          language: agentConfig.language || "en",
+          systemPrompt: agentConfig.prompt || agentConfig.system_prompt,
+          firstMessage: agentConfig.first_message || null,
+          maxSessionLength: agentConfig.max_session_length || 3600,
+          maxIdleTime: agentConfig.max_idle_time || 300,
+        }),
       });
 
-      if (!tokenResponse.ok) {
-        throw new Error(t("simli.errorToken", { status: String(tokenResponse.status) }));
-      }
-
-      const tokenData = await tokenResponse.json();
-      const token = tokenData.session_token;
-
-      // Step 2: Start session using agent_id (loads all config from Simli)
-      const response = await fetch(
-        `https://api.simli.ai/auto/start/${mentor.agentId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "session-token": token,
-          },
-        }
-      );
-
       if (!response.ok) {
-        throw new Error(t("simli.errorConnect", { status: String(response.status) }));
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || t("simli.errorConnect", { status: String(response.status) }));
       }
 
       const data = await response.json();
@@ -168,11 +169,13 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
     }
   }, [mentor, t]);
 
+  const pollCountRef = useRef(0);
   const pollForChatbot = useCallback(() => {
+    pollCountRef.current += 1;
     if (myCallObjRef.current) {
       const participants = myCallObjRef.current.participants();
       for (const [, participant] of Object.entries(participants)) {
-        if (participant.user_name === "Chatbot") {
+        if (participant.user_name !== "User" && participant.session_id) {
           setChatbotId(participant.session_id);
           setIsLoading(false);
           setIsConnected(true);
@@ -181,7 +184,12 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
         }
       }
     }
-    setTimeout(pollForChatbot, 500);
+    if (pollCountRef.current < 120) {
+      setTimeout(pollForChatbot, 500);
+    } else {
+      setError("No se pudo conectar con el avatar. Simli puede estar sin capacidad disponible. Intentalo de nuevo mas tarde.");
+      setIsLoading(false);
+    }
   }, [startMonitoring]);
 
   const handleStop = useCallback(async () => {
