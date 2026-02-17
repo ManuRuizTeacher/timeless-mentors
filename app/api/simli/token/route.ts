@@ -9,7 +9,10 @@ export async function POST() {
 
   const res = await fetch("https://api.simli.ai/auto/token", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-simli-api-key": SIMLI_API_KEY,
+    },
     body: JSON.stringify({ simliAPIKey: SIMLI_API_KEY }),
   });
 
