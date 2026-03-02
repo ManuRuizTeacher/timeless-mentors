@@ -34,6 +34,12 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           {profile && (
             <>
+              <Link
+                href="/"
+                className="text-sm text-text-secondary hover:text-white transition-colors"
+              >
+                {t("nav.home")}
+              </Link>
               {profile.email === "admin@admin.com" && (
                 <Link
                   href="/admin"
