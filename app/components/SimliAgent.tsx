@@ -25,6 +25,7 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
   const [callObject, setCallObject] = useState<DailyCall | null>(null);
   const [chatbotId, setChatbotId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isMicMuted, setIsMicMuted] = useState(false);
   const myCallObjRef = useRef<DailyCall | null>(null);
 
   // Monitoring refs
@@ -192,6 +193,13 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
     }
   }, [startMonitoring]);
 
+  const toggleMic = useCallback(() => {
+    if (!callObject) return;
+    const newMuted = !isMicMuted;
+    callObject.setLocalAudio(!newMuted);
+    setIsMicMuted(newMuted);
+  }, [callObject, isMicMuted]);
+
   const handleStop = useCallback(async () => {
     await endMonitoring();
     if (callObject) {
@@ -297,12 +305,43 @@ const SimliAgent: React.FC<SimliAgentProps> = ({ mentor, onClose }) => {
               {isLoading ? t("simli.connectingShort") : t("simli.startConversation")}
             </button>
           ) : (
-            <button
-              onClick={handleStop}
-              className="px-8 py-3 rounded-full font-medium bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all duration-300"
-            >
-              {t("simli.endConversation")}
-            </button>
+            <>
+              <button
+                onClick={toggleMic}
+                title={isMicMuted ? t("simli.unmuteMic") : t("simli.muteMic")}
+                className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 border",
+                  isMicMuted
+                    ? "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500 hover:text-white"
+                    : "bg-white/10 text-white border-white/20 hover:bg-white/20"
+                )}
+              >
+                {isMicMuted ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 9V12C9 13.66 10.34 15 12 15C12.55 15 13.05 14.83 13.47 14.55" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M15 9.34V4C15 2.34 13.66 1 12 1C10.34 1 9 2.34 9 4V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M17 16.95C15.5 18.25 13.84 19 12 19C8.13 19 5 15.87 5 12V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M19 10V12C19 12.68 18.87 13.34 18.63 13.95" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 19V23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M8 23H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 1C10.34 1 9 2.34 9 4V12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12V4C15 2.34 13.66 1 12 1Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M19 10V12C19 15.87 15.87 19 12 19C8.13 19 5 15.87 5 12V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 19V23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M8 23H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={handleStop}
+                className="px-8 py-3 rounded-full font-medium bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white transition-all duration-300"
+              >
+                {t("simli.endConversation")}
+              </button>
+            </>
           )}
         </div>
 

@@ -40,6 +40,8 @@
   "simli.startConversation": "Start Conversation",
   "simli.endConversation": "End Conversation",
   "simli.inProgress": "Conversation in progress — speak through your microphone",
+  "simli.muteMic": "Mute microphone",
+  "simli.unmuteMic": "Unmute microphone",
   "simli.errorToken": "Error getting token: {status}",
   "simli.errorConnect": "Error connecting to Simli: {status}",
   "simli.errorNoRoom": "Room URL not received",

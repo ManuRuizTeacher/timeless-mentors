@@ -40,6 +40,8 @@
   "simli.startConversation": "Iniciar Conversa",
   "simli.endConversation": "Finalitzar Conversa",
   "simli.inProgress": "Conversa en curs — parla pel teu microfon",
+  "simli.muteMic": "Silenciar microfon",
+  "simli.unmuteMic": "Activar microfon",
   "simli.errorToken": "Error en obtenir token: {status}",
   "simli.errorConnect": "Error en connectar amb Simli: {status}",
   "simli.errorNoRoom": "No s'ha rebut URL de la sala",
