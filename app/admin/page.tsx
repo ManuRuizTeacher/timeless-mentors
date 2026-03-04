@@ -145,6 +145,9 @@ export default function AdminPage() {
     schoolId: "",
   });
   const [createUserLoading, setCreateUserLoading] = useState(false);
+  const [editingUserNameId, setEditingUserNameId] = useState<string | null>(null);
+  const [editUserNameValue, setEditUserNameValue] = useState("");
+  const [confirmDeleteUserId, setConfirmDeleteUserId] = useState<string | null>(null);
 
   // Monitoring tab
   const [monitoringRecords, setMonitoringRecords] = useState<MonitoringRecord[]>([]);
@@ -594,6 +597,38 @@ export default function AdminPage() {
       }
       setCreateUserLoading(false);
     }
+  };
+
+  const handleRenameUser = async (uid: string) => {
+    const trimmed = editUserNameValue.trim();
+    if (!trimmed) {
+      setStatus("El nombre no puede estar vacio.");
+      return;
+    }
+    setActionLoading(uid);
+    try {
+      await updateDoc(doc(db, "users", uid), { name: trimmed });
+      setStatus("Nombre actualizado.");
+      setEditingUserNameId(null);
+      setEditUserNameValue("");
+      await fetchAll();
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`);
+    }
+    setActionLoading(null);
+  };
+
+  const handleDeleteUser = async (uid: string) => {
+    setActionLoading(uid);
+    try {
+      await deleteDoc(doc(db, "users", uid));
+      setStatus("Usuario eliminado.");
+      setConfirmDeleteUserId(null);
+      await fetchAll();
+    } catch (err: any) {
+      setStatus(`Error: ${err.message}`);
+    }
+    setActionLoading(null);
   };
 
   // ════════════════════════════════════════════════════════════
@@ -1357,12 +1392,78 @@ export default function AdminPage() {
                         >
                           <div className="flex items-start justify-between gap-4 mb-3">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-sora font-semibold truncate">
-                                {u.name}
-                              </h3>
+                              {editingUserNameId === u.uid ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={editUserNameValue}
+                                    onChange={(e) => setEditUserNameValue(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") handleRenameUser(u.uid);
+                                      if (e.key === "Escape") { setEditingUserNameId(null); setEditUserNameValue(""); }
+                                    }}
+                                    autoFocus
+                                    className="bg-primary border border-border-subtle rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-accent transition-colors"
+                                  />
+                                  <button
+                                    onClick={() => handleRenameUser(u.uid)}
+                                    disabled={actionLoading === u.uid}
+                                    className="px-3 py-1 rounded-full text-xs font-medium bg-accent text-white hover:bg-accent-hover disabled:opacity-50 transition-all"
+                                  >
+                                    Guardar
+                                  </button>
+                                  <button
+                                    onClick={() => { setEditingUserNameId(null); setEditUserNameValue(""); }}
+                                    className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-text-secondary border border-border-subtle hover:bg-white/10 transition-all"
+                                  >
+                                    Cancelar
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-sora font-semibold truncate">
+                                    {u.name}
+                                  </h3>
+                                  <button
+                                    onClick={() => { setEditingUserNameId(u.uid); setEditUserNameValue(u.name); }}
+                                    className="text-text-secondary hover:text-accent transition-colors text-xs"
+                                    title="Editar nombre"
+                                  >
+                                    &#9998;
+                                  </button>
+                                </div>
+                              )}
                               <p className="text-xs text-text-secondary truncate">
                                 {u.email}
                               </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {confirmDeleteUserId === u.uid ? (
+                                <>
+                                  <span className="text-xs text-red-400">Confirmar?</span>
+                                  <button
+                                    onClick={() => handleDeleteUser(u.uid)}
+                                    disabled={actionLoading === u.uid}
+                                    className="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-all"
+                                  >
+                                    {actionLoading === u.uid ? "..." : "Si, eliminar"}
+                                  </button>
+                                  <button
+                                    onClick={() => setConfirmDeleteUserId(null)}
+                                    className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-text-secondary border border-border-subtle hover:bg-white/10 transition-all"
+                                  >
+                                    No
+                                  </button>
+                                </>
+                              ) : (
+                                <button
+                                  onClick={() => setConfirmDeleteUserId(u.uid)}
+                                  className="px-3 py-1 rounded-full text-xs font-medium bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30 transition-all"
+                                  title="Eliminar usuario"
+                                >
+                                  Eliminar
+                                </button>
+                              )}
                             </div>
                           </div>
 
